@@ -1,2 +1,2 @@
 #!/bin/bash
-apt install libjpeg-turbo8 libjpeg-turbo8-dev -y
+apt install gcc g++ make libjpeg-turbo8-dev -y
