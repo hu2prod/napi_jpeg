@@ -69,7 +69,7 @@ napi_value jpeg_decode_rgba(napi_env env, napi_callback_info info) {
   }
   
   jpeg_create_decompress(&cinfo);
-  jpeg_mem_src(&cinfo, (unsigned char *) data_src, data_src_len);  
+  jpeg_mem_src(&cinfo, (unsigned char *) data_src, data_src_len);
   jpeg_read_header(&cinfo, TRUE);
   cinfo.out_color_space = JCS_EXT_RGBA;
   jpeg_start_decompress(&cinfo);
@@ -157,6 +157,122 @@ napi_value jpeg_decode_rgba(napi_env env, napi_callback_info info) {
   return ret_arr;
 }
 
+napi_value jpeg_decode_size(napi_env env, napi_callback_info info) {
+  napi_status status;
+  
+  napi_value ret_dummy;
+  status = napi_create_int32(env, 0, &ret_dummy);
+  
+  if (status != napi_ok) {
+    napi_throw_error(env, NULL, "Unable to create return value ret_dummy");
+    return ret_dummy;
+  }
+  
+  size_t argc = 1;
+  napi_value argv[1];
+  status = napi_get_cb_info(env, info, &argc, argv, NULL, NULL);
+  
+  if (status != napi_ok) {
+    napi_throw_error(env, NULL, "Failed to parse arguments");
+    return ret_dummy;
+  }
+  
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  unsigned char *data_src;
+  size_t data_src_len;
+  status = napi_get_buffer_info(env, argv[0], (void**)&data_src, &data_src_len);
+  
+  if (status != napi_ok) {
+    napi_throw_error(env, NULL, "Invalid buffer was passed as argument of data_src");
+    return ret_dummy;
+  }
+  
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  struct jpeg_decompress_struct cinfo;
+  struct my_jpeg_error_mgr jerr;
+  
+  cinfo.err = jpeg_std_error(&jerr.pub);
+  jerr.pub.error_exit=jpeg_cb_error_exit;
+  
+  if (setjmp(jerr.setjmp_buffer)) {
+    jpeg_destroy_decompress(&cinfo);
+    napi_throw_error(env, NULL, "fail");
+    return ret_dummy;
+  }
+  
+  jpeg_create_decompress(&cinfo);
+  jpeg_mem_src(&cinfo, (unsigned char *) data_src, data_src_len);
+  jpeg_read_header(&cinfo, TRUE);
+  cinfo.out_color_space = JCS_EXT_RGBA;
+  jpeg_start_decompress(&cinfo);
+  
+  unsigned int width, height;
+  
+  width = cinfo.output_width;
+  height = cinfo.output_height;
+  
+  jpeg_destroy_decompress(&cinfo);
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  
+  napi_value ret_arr;
+  status = napi_create_array(env, &ret_arr);
+  if (status != napi_ok) {
+    napi_throw_error(env, NULL, "Unable to create return value");
+    return ret_dummy;
+  }
+  
+  
+  // width
+  napi_value ret_width;
+  status = napi_create_int32(env, width, &ret_width);
+  
+  if (status != napi_ok) {
+    napi_throw_error(env, NULL, "Unable to create return value ret_width");
+    return ret_dummy;
+  }
+  
+  status = napi_set_element(env, ret_arr, 0, ret_width);
+  
+  if (status != napi_ok) {
+    napi_throw_error(env, NULL, "Unable to create return value ret_width assign");
+    return ret_dummy;
+  }
+  // height
+  napi_value ret_height;
+  status = napi_create_int32(env, height, &ret_height);
+  
+  if (status != napi_ok) {
+    napi_throw_error(env, NULL, "Unable to create return value ret_height");
+    return ret_dummy;
+  }
+  
+  status = napi_set_element(env, ret_arr, 1, ret_height);
+  
+  if (status != napi_ok) {
+    napi_throw_error(env, NULL, "Unable to create return value ret_height assign");
+    return ret_dummy;
+  }
+  
+  // byte size = 4
+  napi_value ret_byte_size;
+  status = napi_create_int32(env, 4, &ret_byte_size);
+  
+  if (status != napi_ok) {
+    napi_throw_error(env, NULL, "Unable to create return value ret_byte_size");
+    return ret_dummy;
+  }
+  
+  status = napi_set_element(env, ret_arr, 2, ret_byte_size);
+  
+  if (status != napi_ok) {
+    napi_throw_error(env, NULL, "Unable to create return value ret_byte_size assign");
+    return ret_dummy;
+  }
+  
+  
+  return ret_arr;
+}
+
 napi_value Init(napi_env env, napi_value exports) {
   napi_status status;
   napi_value fn;
@@ -167,6 +283,16 @@ napi_value Init(napi_env env, napi_value exports) {
   }
   
   status = napi_set_named_property(env, exports, "jpeg_decode_rgba", fn);
+  if (status != napi_ok) {
+    napi_throw_error(env, NULL, "Unable to populate exports");
+  }
+  
+  status = napi_create_function(env, NULL, 0, jpeg_decode_size, NULL, &fn);
+  if (status != napi_ok) {
+    napi_throw_error(env, NULL, "Unable to wrap native function");
+  }
+  
+  status = napi_set_named_property(env, exports, "jpeg_decode_size", fn);
   if (status != napi_ok) {
     napi_throw_error(env, NULL, "Unable to populate exports");
   }

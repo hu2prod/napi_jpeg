@@ -5,8 +5,12 @@ decode jpeg
     fs = require("fs")
     
     src = fs.readFileSync("test/input.jpg")
-    dst = Buffer.alloc(4*1920*1080)
-    [size_x, size_y, channel_count] = mod.jpeg_decode_rgba(src, dst)
+    res = mod.jpeg_decode_size(src)
+    console.log(res)
+    size_x = res[0]
+    size_y = res[1]
+    dst = Buffer.alloc(4*size_x*size_y)
+    mod.jpeg_decode_rgba(src, dst)
 
 ## Thanks
 inspired by zhangyuanwei/node-images
