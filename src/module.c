@@ -44,7 +44,7 @@ napi_value jpeg_decode_rgba(napi_env env, napi_callback_info info) {
   }
   
   ////////////////////////////////////////////////////////////////////////////////////////////////////
-  unsigned char *data_src;
+  u8 *data_src;
   size_t data_src_len;
   status = napi_get_buffer_info(env, argv[0], (void**)&data_src, &data_src_len);
   
@@ -53,7 +53,7 @@ napi_value jpeg_decode_rgba(napi_env env, napi_callback_info info) {
     return ret_dummy;
   }
   
-  unsigned char *data_dst;
+  u8 *data_dst;
   size_t data_dst_len;
   status = napi_get_buffer_info(env, argv[1], (void**)&data_dst, &data_dst_len);
   
@@ -76,12 +76,12 @@ napi_value jpeg_decode_rgba(napi_env env, napi_callback_info info) {
   }
   
   jpeg_create_decompress(&cinfo);
-  jpeg_mem_src(&cinfo, (unsigned char *) data_src, data_src_len);
+  jpeg_mem_src(&cinfo, (u8 *) data_src, data_src_len);
   jpeg_read_header(&cinfo, TRUE);
   cinfo.out_color_space = JCS_EXT_RGBA;
   jpeg_start_decompress(&cinfo);
   
-  unsigned int width, height, line;
+  u32 width, height, line;
   
   width = cinfo.output_width;
   height = cinfo.output_height;
@@ -97,7 +97,7 @@ napi_value jpeg_decode_rgba(napi_env env, napi_callback_info info) {
   }
   
   while((line = cinfo.output_scanline) < height){
-    unsigned char *ptr = data_dst + 4*line*width;
+    u8 *ptr = data_dst + 4*line*width;
     jpeg_read_scanlines(&cinfo, &ptr, 1);
   }
   
@@ -185,7 +185,7 @@ napi_value jpeg_decode_rgb(napi_env env, napi_callback_info info) {
   }
   
   ////////////////////////////////////////////////////////////////////////////////////////////////////
-  unsigned char *data_src;
+  u8 *data_src;
   size_t data_src_len;
   status = napi_get_buffer_info(env, argv[0], (void**)&data_src, &data_src_len);
   
@@ -194,7 +194,7 @@ napi_value jpeg_decode_rgb(napi_env env, napi_callback_info info) {
     return ret_dummy;
   }
   
-  unsigned char *data_dst;
+  u8 *data_dst;
   size_t data_dst_len;
   status = napi_get_buffer_info(env, argv[1], (void**)&data_dst, &data_dst_len);
   
@@ -217,12 +217,12 @@ napi_value jpeg_decode_rgb(napi_env env, napi_callback_info info) {
   }
   
   jpeg_create_decompress(&cinfo);
-  jpeg_mem_src(&cinfo, (unsigned char *) data_src, data_src_len);
+  jpeg_mem_src(&cinfo, (u8 *) data_src, data_src_len);
   jpeg_read_header(&cinfo, TRUE);
   cinfo.out_color_space = JCS_EXT_RGB;
   jpeg_start_decompress(&cinfo);
   
-  unsigned int width, height, line;
+  u32 width, height, line;
   
   width = cinfo.output_width;
   height = cinfo.output_height;
@@ -238,7 +238,7 @@ napi_value jpeg_decode_rgb(napi_env env, napi_callback_info info) {
   }
   
   while((line = cinfo.output_scanline) < height){
-    unsigned char *ptr = data_dst + 3*line*width;
+    u8 *ptr = data_dst + 3*line*width;
     jpeg_read_scanlines(&cinfo, &ptr, 1);
   }
   
@@ -326,7 +326,7 @@ napi_value jpeg_decode_size(napi_env env, napi_callback_info info) {
   }
   
   ////////////////////////////////////////////////////////////////////////////////////////////////////
-  unsigned char *data_src;
+  u8 *data_src;
   size_t data_src_len;
   status = napi_get_buffer_info(env, argv[0], (void**)&data_src, &data_src_len);
   
@@ -349,12 +349,12 @@ napi_value jpeg_decode_size(napi_env env, napi_callback_info info) {
   }
   
   jpeg_create_decompress(&cinfo);
-  jpeg_mem_src(&cinfo, (unsigned char *) data_src, data_src_len);
+  jpeg_mem_src(&cinfo, (u8 *) data_src, data_src_len);
   jpeg_read_header(&cinfo, TRUE);
   cinfo.out_color_space = JCS_EXT_RGBA;
   jpeg_start_decompress(&cinfo);
   
-  unsigned int width, height;
+  u32 width, height;
   
   width = cinfo.output_width;
   height = cinfo.output_height;
@@ -522,7 +522,7 @@ napi_value jpeg_encode_rgb(napi_env env, napi_callback_info info) {
   proxy.position = 0;
   
   jpeg_create_compress(&cinfo);
-  jpeg_mem_dest(&cinfo, (unsigned char **) &(proxy.data), &proxy.length);
+  jpeg_mem_dest(&cinfo, (u8 **) &(proxy.data), &proxy.length);
   
   cinfo.image_width  = size_x;
   cinfo.image_height = size_y;
@@ -535,7 +535,7 @@ napi_value jpeg_encode_rgb(napi_env env, napi_callback_info info) {
   
   jpeg_start_compress(&cinfo, TRUE);
   
-  int line;
+  i32 line;
   while((line = cinfo.next_scanline) < size_y){
     row_pointer[0] = (JSAMPROW) (data_src + line * size_x * 3);
     (void) jpeg_write_scanlines(&cinfo, row_pointer, 1);
@@ -719,7 +719,7 @@ napi_value jpeg_encode_rgba(napi_env env, napi_callback_info info) {
   proxy.position = 0;
   
   jpeg_create_compress(&cinfo);
-  jpeg_mem_dest(&cinfo, (unsigned char **) &(proxy.data), &proxy.length);
+  jpeg_mem_dest(&cinfo, (u8 **) &(proxy.data), &proxy.length);
   
   cinfo.image_width  = size_x;
   cinfo.image_height = size_y;
@@ -732,7 +732,7 @@ napi_value jpeg_encode_rgba(napi_env env, napi_callback_info info) {
   
   jpeg_start_compress(&cinfo, TRUE);
   
-  int line;
+  i32 line;
   while((line = cinfo.next_scanline) < size_y){
     row_pointer[0] = (JSAMPROW) (data_src + line * size_x * 4);
     (void) jpeg_write_scanlines(&cinfo, row_pointer, 1);
